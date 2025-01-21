@@ -28,6 +28,7 @@ db.run(
 );
 
 // Routes
+
 // Get All Activities
 app.get("/api/activities", (req, res) => {
   db.all("SELECT * FROM activities", [], (err, rows) => {
@@ -63,12 +64,25 @@ app.put("/api/activities/:id", (req, res) => {
   );
 });
 
-// Delete Activity
+// Delete Single Activity
 app.delete("/api/activities/:id", (req, res) => {
   const { id } = req.params;
   db.run("DELETE FROM activities WHERE id = ?", [id], function (err) {
     if (err) return res.status(500).json(err.message);
     res.json({ message: "Activity deleted successfully." });
+  });
+});
+
+// Delete All Activities
+app.delete("/api/activities", (req, res) => {
+  db.run("DELETE FROM activities", function (err) {
+    if (err) return res.status(500).json(err.message);
+
+    // Reset auto-increment ID
+    db.run("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'activities'", (seqErr) => {
+      if (seqErr) return res.status(500).json(seqErr.message);
+      res.json({ message: "All activities deleted, and IDs reset." });
+    });
   });
 });
 
